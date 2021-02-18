@@ -53,12 +53,13 @@ class SaveModelandInjectNovelty(BaseCallback):
 
     """
 
-    def __init__(self, env, check_freq, log_dir, model_name, step_num, novelty_name, novelty_difficulty, novelty_arg1, novelty_arg2):
+    def __init__(self, env, check_freq, save_freq, log_dir, model_name, step_num, novelty_name, novelty_difficulty, novelty_arg1, novelty_arg2):
         super(SaveModelandInjectNovelty, self).__init__()
         
         self.step_num = step_num
         self.env = env
         self.check_freq = check_freq
+        self.save_freq = save_freq
         self.log_dir = log_dir
         self.save_path = os.path.join(log_dir, model_name)
         self.best_mean_reward = -np.inf
@@ -83,6 +84,24 @@ class SaveModelandInjectNovelty(BaseCallback):
                     self.model.save(self.save_path)
         if self.n_calls == self.step_num:
             self.env = inject_novelty(self.env, self.novelty_name, self.novelty_difficulty, self.novelty_arg1, self.novelty_arg2)
+        
+        # save best model every "save_freq" steps
+        if self.n_calls % self.save_freq == 0:
+            self.model.save(self.save_path+str(self.n_calls))
+            #             # Retrieve training reward
+            # x, y = ts2xy(load_results(self.log_dir), 'timesteps')
+            # if len(x) > 0:
+            #     # Mean training reward over the last 100 episodes
+            #     mean_reward = np.mean(y[-100:])
+
+            #     # New best model, you could save the agent here
+            #     if mean_reward > self.best_mean_reward:
+            #         self.best_mean_reward = mean_reward
+            #         print("Saving new best model to {}".format(self.save_path))
+        # Save the first model
+        if self.n_calls == 50:
+            self.model.save(self.save_path+str(self.n_calls))
+
 
 if __name__ == "__main__":
 
@@ -96,8 +115,10 @@ if __name__ == "__main__":
     ap.add_argument("-N1", "--novelty_arg1", default= '', help="Type of Novelty to inject. Current version supports firewall: 'hard'; remapaction: 'hard'; breakincrease: 'stick' ")
     ap.add_argument("-N2", "--novelty_arg2", default= '', help="Type of Novelty to inject. Current version supports firewall: 'hard'; remapaction: 'hard'; breakincrease: 'stick' ")
    
-    ap.add_argument("-I", "--inject", default=1100000, help="Number of trials (steps) to run before injecting novelty", type=int)
+    ap.add_argument("-I", "--inject", default=1200000, help="Number of trials (steps) to run before injecting novelty", type=int)
     ap.add_argument("-C", "--check_best", default=10000, help="Number of (steps) to run check and save best model", type=int)
+    ap.add_argument("-M", "--num_models", default=20, help="Number of models to save for testing later", type=int)
+    
     ap.add_argument("-print_output", default="", help="print stuff")
     args = vars(ap.parse_args())
     
@@ -116,7 +137,8 @@ if __name__ == "__main__":
     env = Monitor(env, exp_dir) # for monitoring and saving the results
     # callback = RenderOnEachStep(env)
     # callback for the saving best model and injectiing novelty
-    callback = SaveModelandInjectNovelty(env, args['check_best'], exp_dir, 'best_model', args['inject'], args['novelty_name'], args['novelty_difficulty'], args['novelty_arg1'], args['novelty_arg2'])
+    save_freq = timesteps//args['num_models']
+    callback = SaveModelandInjectNovelty(env, args['check_best'], save_freq, exp_dir, 'best_model', args['inject'], args['novelty_name'], args['novelty_difficulty'], args['novelty_arg1'], args['novelty_arg2'])
     check_env(env, warn=True)
     # Optional: PPO2 requires a vectorized environment to run
     # the env is now wrapped automatically when passing it to the constructor
