@@ -84,10 +84,11 @@ class SaveModelandInjectNovelty(BaseCallback):
                     self.model.save(self.save_path)
         if self.n_calls == self.step_num:
             self.env = inject_novelty(self.env, self.novelty_name, self.novelty_difficulty, self.novelty_arg1, self.novelty_arg2)
+            print ("novel env.observation_space = {}".format(self.env.observation_space))
         
         # save best model every "save_freq" steps
         if self.n_calls % self.save_freq == 0:
-            self.model.save(self.save_path+str(self.n_calls))
+            self.model.save(self.save_path + '_' + str(self.n_calls))
             #             # Retrieve training reward
             # x, y = ts2xy(load_results(self.log_dir), 'timesteps')
             # if len(x) > 0:
@@ -100,7 +101,7 @@ class SaveModelandInjectNovelty(BaseCallback):
             #         print("Saving new best model to {}".format(self.save_path))
         # Save the first model
         if self.n_calls == 50:
-            self.model.save(self.save_path+str(self.n_calls))
+            self.model.save(self.save_path + '_' + str(self.n_calls))
 
 
 if __name__ == "__main__":
