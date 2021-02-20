@@ -1,4 +1,3 @@
-from posix import listdir
 from gym_novel_gridworlds.novelty_wrappers import inject_novelty
 import os
 import time
@@ -11,23 +10,8 @@ import gym_novel_gridworlds
 from gym_novel_gridworlds.wrappers import SaveTrajectories, LimitActions
 from gym_novel_gridworlds.observation_wrappers import LidarInFront, AgentMap
 
-# import numpy as np
-# from stable_baselines.common import callbacks
-
-# from stable_baselines.common.env_checker import check_env
-
 from stable_baselines import PPO2
-# from stable_baselines import DQN
-# from stable_baselines import A2C
-# from stable_baselines.gail import ExpertDataset
 
-# from stable_baselines.common.policies import MlpPolicy
-from stable_baselines.common.vec_env import DummyVecEnv
-# from stable_baselines.common import make_vec_env
-
-# from stable_baselines.bench import Monitor
-# from stable_baselines.common.callbacks import BaseCallback
-# from stable_baselines.results_plotter import load_results, ts2xy
 
 MAX_STEPS = 5000
 
@@ -43,7 +27,7 @@ def save_results (data, novelty_name, tag):
     
 def run(novelty_family, env_id, eval_eps):
 
-    dir_name = 'results/'+str(env_id)
+    dir_name = 'results' + os.sep + str(env_id)
     print ("Environment = {}".format(env_id))
     env = gym.make(env_id) # make the environment
     env = LidarInFront(env) # wrap the observation space in the environment
@@ -52,23 +36,21 @@ def run(novelty_family, env_id, eval_eps):
         env = LimitActions(env, {'Forward', 'Left', 'Right', 'Break', 'Craft_bow'}) # this is hardcoded for now
     # print (os.listdir(dir_name))
     for name in os.listdir(dir_name):
-        # name = 'remapaction_4gbdsu34ddhjakndj'
         # print ("each name = {}".format(name))
         novelty_name = name.split('_')[0] # get novelty name "remapaction_fjbwuyguyqw12324213"
-        print ("novelty_name = {}".format(novelty_name))
+        # print ("novelty_name = {}".format(novelty_name))
         if novelty_name == novelty_family[0]: # we only want all the experiments of the same novelty
             sub_dir_name = dir_name+os.sep+str(name)
-            print ("sub_dir_name = {}".format(sub_dir_name))
-            for filename in listdir(sub_dir_name):
+            # print ("sub_dir_name = {}".format(sub_dir_name))
+            for filename in os.listdir(sub_dir_name):
                 model_file_name = filename.split('.')[0] # filename = 'best_model_1200.zip'
                 # filter out the unwanted files
+                # print ("model_file_name = {}".format(model_file_name))
                 filtered_model_files = model_file_name.split('_')
-                if len(filtered_model_files) >=3:
+                if filtered_model_files[0] == 'model':
+                # if len(filtered_model_files) >=3:
                     model_path = sub_dir_name+os.sep+model_file_name
-                    print ("model_path = {}".format(model_path))
-                    # file_name = dir_name+os.sep+str(name)+os.sep+"*.zip"
-                    # print (file_name)
-                    # now we have the file name and quite possibly the path
+                    # print ("model_path = {}".format(model_path))
                     # inject novelty for corresponding models
                     file_name_split = model_file_name.split('_') # model_file_name = 'best_model_1200' 
                     if int(file_name_split[-1]) >= args['inject']:
@@ -78,6 +60,7 @@ def run(novelty_family, env_id, eval_eps):
 
                     # time.sleep(2)
                     model = PPO2.load(model_path) # load the model
+                    print ("loaded model from {}".format(model_path))
                     timestep = file_name_split[-1]
                     run_tests(env, model, eval_eps, name, timestep) # runs the tests and writes the result
 
@@ -108,12 +91,6 @@ def run_tests(env, model, eval_eps, novelty_name, timestep):
     avg_steps = float(total_steps/eval_eps)
     D = [timestep, avg_rew, avg_steps]
     save_results(D, novelty_name, tag = 'average')
-    
-# Things to take care of
-
-
-
-# 4. get all the results file and plot  
 
 
 if __name__ == '__main__':

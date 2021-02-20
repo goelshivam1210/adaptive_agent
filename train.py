@@ -84,8 +84,10 @@ class SaveModelandInjectNovelty(BaseCallback):
                     self.model.save(self.save_path)
         if self.n_calls == self.step_num:
             self.env = inject_novelty(self.env, self.novelty_name, self.novelty_difficulty, self.novelty_arg1, self.novelty_arg2)
-            print ("novel env.observation_space = {}".format(self.env.observation_space))
-        
+            # if self.novelty_name == 'breakincrease':
+                # print ("Break increase novelty injected::: self.env.itemtobreakmore = {}".format(self.env.itemtobreakmore))
+            # if self.novelty_name == 'remapaction':
+                # print("Action remap novelty check:: self.env.limited_actions_id = {}".format(self.env.limited_actions_id))
         # save best model every "save_freq" steps
         if self.n_calls % self.save_freq == 0:
             self.model.save(self.save_path + '_' + str(self.n_calls))
@@ -139,7 +141,7 @@ if __name__ == "__main__":
     # callback = RenderOnEachStep(env)
     # callback for the saving best model and injectiing novelty
     save_freq = timesteps//args['num_models']
-    callback = SaveModelandInjectNovelty(env, args['check_best'], save_freq, exp_dir, 'best_model', args['inject'], args['novelty_name'], args['novelty_difficulty'], args['novelty_arg1'], args['novelty_arg2'])
+    callback = SaveModelandInjectNovelty(env, args['check_best'], save_freq, exp_dir, 'model', args['inject'], args['novelty_name'], args['novelty_difficulty'], args['novelty_arg1'], args['novelty_arg2'])
     check_env(env, warn=True)
     # Optional: PPO2 requires a vectorized environment to run
     # the env is now wrapped automatically when passing it to the constructor
