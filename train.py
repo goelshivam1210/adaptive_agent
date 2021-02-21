@@ -84,10 +84,11 @@ class SaveModelandInjectNovelty(BaseCallback):
                     self.model.save(self.save_path)
         if self.n_calls == self.step_num:
             self.env = inject_novelty(self.env, self.novelty_name, self.novelty_difficulty, self.novelty_arg1, self.novelty_arg2)
+            check_env(self.env, warn=True)
             # if self.novelty_name == 'breakincrease':
-                # print ("Break increase novelty injected::: self.env.itemtobreakmore = {}".format(self.env.itemtobreakmore))
+            #     print ("Break increase novelty injected::: self.env.itemtobreakmore = {}".format(self.env.itemtobreakmore))
             # if self.novelty_name == 'remapaction':
-                # print("Action remap novelty check:: self.env.limited_actions_id = {}".format(self.env.limited_actions_id))
+            #     print("Action remap novelty check:: self.env.limited_actions_id = {}".format(self.env.limited_actions_id))
         # save best model every "save_freq" steps
         if self.n_calls % self.save_freq == 0:
             self.model.save(self.save_path + '_' + str(self.n_calls))
@@ -104,6 +105,7 @@ class SaveModelandInjectNovelty(BaseCallback):
         # Save the first model
         if self.n_calls == 50:
             self.model.save(self.save_path + '_' + str(self.n_calls))
+        # print ("self.env observation space = {} ".format(self.env.observation_space))
 
 
 if __name__ == "__main__":
@@ -135,8 +137,12 @@ if __name__ == "__main__":
     os.makedirs(exp_dir, exist_ok=True)
     
     env = gym.make(env_id) # make the environment
+    env.unbreakable_items.add('crafting_table') # Make crafting table unbreakable for easy solving of task.
     env = LimitActions(env, {'Forward', 'Left', 'Right', 'Break', 'Craft_bow'}) # limit actions for easy training
     env = LidarInFront(env) # generate the observation space using LIDAR sensors
+    print(env.unbreakable_items)
+    env.reward_done = 1000
+    env.reward_intermediate = 50
     env = Monitor(env, exp_dir) # for monitoring and saving the results
     # callback = RenderOnEachStep(env)
     # callback for the saving best model and injectiing novelty

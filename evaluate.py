@@ -30,6 +30,9 @@ def run(novelty_family, env_id, eval_eps):
     dir_name = 'results' + os.sep + str(env_id)
     print ("Environment = {}".format(env_id))
     env = gym.make(env_id) # make the environment
+    env.unbreakable_items.add('crafting_table') # Make crafting table unbreakable for easy solving of task.
+    env.reward_done = 1000
+    env.reward_intermediate = 50
     env = LidarInFront(env) # wrap the observation space in the environment
     # env = DummyVecEnv([lambda: env])
     if env_id == 'NovelGridworld-Bow-v0':
@@ -55,6 +58,9 @@ def run(novelty_family, env_id, eval_eps):
                     file_name_split = model_file_name.split('_') # model_file_name = 'best_model_1200' 
                     if int(file_name_split[-1]) >= args['inject']:
                             env = gym.make(env_id) # make the environment
+                            env.unbreakable_items.add('crafting_table') # Make crafting table unbreakable for easy solving of task.
+                            env.reward_done = 1000
+                            env.reward_intermediate = 50
                             env = LidarInFront(env) # wrap the observation space in the environment
                             env = inject_novelty(env, novelty_family[0], novelty_family[1], novelty_family[2], novelty_family[3])
 
