@@ -45,12 +45,14 @@ def run(novelty_family, env_id, eval_eps):
         if novelty_name == novelty_family[0]: # we only want all the experiments of the same novelty
             sub_dir_name = dir_name+os.sep+str(name)
             # print ("sub_dir_name = {}".format(sub_dir_name))
-            for filename in os.listdir(sub_dir_name):
+            print ("Sorted list of files = {}".format(sorted(os.listdir(sub_dir_name))))
+            for filename in sorted(os.listdir(sub_dir_name)):
                 model_file_name = filename.split('.')[0] # filename = 'best_model_1200.zip'
                 # filter out the unwanted files
                 # print ("model_file_name = {}".format(model_file_name))
                 filtered_model_files = model_file_name.split('_')
                 if filtered_model_files[0] == 'model':
+                    print (filtered_model_files)
                 # if len(filtered_model_files) >=3:
                     model_path = sub_dir_name+os.sep+model_file_name
                     # print ("model_path = {}".format(model_path))
