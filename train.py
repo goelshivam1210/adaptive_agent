@@ -225,8 +225,10 @@ if __name__ == "__main__":
     # Optional: PPO2 requires a vectorized environment to run
     # the env is now wrapped automatically when passing it to the constructor
     # env = DummyVecEnv([lambda: env])
-    tensorboard_name = "./ppo2_"+str(model_name)+'_tensorboard'+os.sep
-    model = PPO2(MlpPolicy, env, n_steps=256, verbose=1, tensorboard_log=tensorboard_name)
+    # tensorboard_name = "./ppo2_"+str(model_name)+'_tensorboard'+os.sep
+    # model = PPO2(MlpPolicy, env, n_steps=256, verbose=1, tensorboard_log=tensorboard_name)
+    model = PPO2(MlpPolicy, env, n_steps=256, verbose=1)
+
     # model = A2C(MlpPolicy, env, n_steps=150, verbose=1, tensorboard_log="./a2c_bow_v_0_tensorboard/")
 
     # env = DummyVecEnv([lambda: env])
