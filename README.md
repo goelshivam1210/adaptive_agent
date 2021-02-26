@@ -34,10 +34,10 @@ This repository implements [stable_baselines](https://github.com/hill-a/stable-b
 
 ### PDDLS
 
-PDDL files for all the environments are found here
+PDDL files for all the environments are found [here](https://github.com/goelshivam1210/adaptive_agent/tree/master/PDDLs)
 
 ### CSVs
-CSV files from the planning architecture used for evaluations in the paper are found here
+CSV files from the planning architecture used for evaluations in the paper are found [here](https://github.com/goelshivam1210/adaptive_agent/tree/master/CSVs)
 
 <!-- http://github.com - automatic!
 [GitHub](http://github.com) -->
