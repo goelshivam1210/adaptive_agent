@@ -5,10 +5,24 @@ import os, csv
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
+
+import seaborn as sns
+
+sns.set()
 # plt.style.use('seaborn-whitegrid')
+# plt.style.use('seaborn-paper')
+plt.style.use('seaborn-darkgrid')
 
 
-results_path = r"C:\Users\GyanT\Documents\GitHub\adaptive_agent_data\data_from_server_2\test_results"
+
+def millions(x, pos):
+    'The two args are the value and tick position'
+    return '%1.1fM' % (x * 1e-6)
+
+# /Users/goelshivam12/Desktop/research/research/SAIL-ON/code/polycraft-tufts/adaptive_agents/data_from_server_3/adaptive_result_5/test_results
+
+results_path = r"/Users/goelshivam12/Desktop/research/research/SAIL-ON/code/polycraft-tufts/adaptive_agents/data_from_server_3/adaptive_result_5/test_results"
 novelty_injection_point = 2000000
 novelty_used_for_pre_novelty_plot = 'breakincrease'
 
@@ -79,28 +93,42 @@ for novelty in novelty_files:
 #     print("rewards: ", rewards)
 #     print("rewards_std: ", rewards_std)
     
+    
 #     plt.figure(figsize=(5, 5))
     plt.errorbar(post_timesteps, post_rewards, yerr=post_rewards_std, fmt='-o', label=novelty)
+    # std_pos = np.array(post_rewards) + np.array(post_rewards_std)
+    # std_neg = np.array(post_rewards) - np.array(post_rewards_std)
+    # plt.plot(post_rewards, label = 'V.Q.L.', color = 'forestgreen')
+    # plt.fill(std_pos, color = 'honeydew')
+    # plt.xticks(np.arange(0, max(post_timesteps)+1, 1.0))
+    # plt.fill(std_neg, color = 'honeydew')
     
-#     std_pos = np.array(post_rewards) + np.array(post_rewards_std)
-#     std_neg = np.array(post_rewards) - np.array(post_rewards_std)
-#     plt.plot(post_rewards, label = 'V.Q.L.', color = 'forestgreen')
-#     plt.fill(std_pos, color = 'honeydew')
-#     plt.fill(std_neg, color = 'honeydew')
-    
-#     plt.xticks(range(1, 5))
+    # plt.xticks(range(1, 5))
 #     plt.ylim(0, 1)
 
+plt.xticks(ticks = np.arange(0, 4500000, step=500000),labels=(np.arange(0, 4.5, step=0.5)), fontsize = 14)
+# plt.xticks(np.arange(0, 4, step=0.5))
+
 plt.axvline(x=novelty_injection_point, linewidth=3.0, color='pink')
+plt.yticks(fontsize = 14)
     
 plot_lines = plt.errorbar(pre_timesteps, pre_rewards, yerr=pre_rewards_std, fmt='-o')
 
-plt.legend(title='post-novelty', title_fontsize=12, loc='upper right')
-
+# plt.legend(title='post-novelty', title_fontsize=12, loc='lower right')
+plt.legend(loc = 3)
+# sns.set_style("ticks")
 props = dict(boxstyle='round', facecolor='w', alpha=0.2)
-plt.text(600000, 215, 'pre-novelty', fontsize = 12, bbox=props)
+plt.text(600000, 215, 'Pre-Novelty', fontsize = 12, bbox=props)
+plt.text(3000000, 215, 'Post-Novelty', fontsize = 12, bbox=props)
+# plt.text(600000, 215, 'Pre-Novelty', fontsize = 11)
+# plt.text(3000000, 215, 'Post-Novelty', fontsize = 11)
+plt.xlim(xmin=0.0, xmax=4200000)
+
 plt.grid(True)
-plt.ylabel("Average cumulative reward")
-plt.xlabel("Timesteps")
-plt.show()
-plt.savefig("results.png", bbox_inches='tight', dpi=100)
+plt.ylabel("Average cumulative reward per episode", fontsize = 13)
+plt.xlabel("Timesteps (Million)", labelpad=16, fontsize = 13)
+plt.tight_layout()
+# plt.show()
+# plt.savefig("results_latest.png", bbox_inches='tight', dpi=600)
+plt.savefig("results_latest.png", dpi=600)
+
