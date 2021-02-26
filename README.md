@@ -1,19 +1,52 @@
 # adaptive_agent
-This repository implements the stable_baselines training on the gym_novel_gridworlds
+This repository implements [stable_baselines](https://github.com/hill-a/stable-baselines) training on the environment [gym_novel_gridworlds](https://github.com/gtatiya/gym-novel-gridworlds)
 
-To run training 
+## Installation
 
-``` python train.py -E NovelGridworld-Bow-v0 -N breakincrease -N1 stick```
+### Conda environment
+```conda create --name <env> --file requirements.txt```
+```conda activate <env> ```
 
-``` python train.py -E NovelGridworld-Bow-v0 -N remapaction```
-
-``` python train.py -E NovelGridworld-Bow-v0 -N firewall```
+## RL-agent
 
 
+### Train & Evaluate
+
+#### Base script
+``` python train.py -E <name-of-env> -N <novelty-name> -D <novelty-difficulty> -N1 <novelty-arg1> -N2 <novelty-arg2> -I <timestep-to-inject-novelty> -T <number-of-tests> -M <number-of-models-to-save>```
+
+#### Breakincrease novelty
+``` python train.py -N breakincrease -N1 stick```
+
+#### Remap action novelty
+``` python train.py -N remapaction```
+
+#### firewall novelty
+``` python train.py -N firewall```
+
+### Plot
+
+```python plot_results.py```
+
+-------------------------------------
+
+## Planning agent
+
+### PDDLS
+
+PDDL files for all the environments are found here
+
+### CSVs
+CSV files from the planning architecture used for evaluations in the paper are found here
+
+<!-- http://github.com - automatic!
+[GitHub](http://github.com) -->
+<!-- 
 To run evaluations
 
 ```python evaluate.py -N breakincrease -N1 stick```
 
 ```python evaluate.py -N remapaction```
 
-```python evaluate.py -N firewall```
+```python evaluate.py -N firewall``` -->
+

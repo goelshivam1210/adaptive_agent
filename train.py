@@ -1,3 +1,8 @@
+################################
+# Author: Shivam Goel
+# email: shivam.goel@tufts.edu
+################################
+
 from gym_novel_gridworlds.novelty_wrappers import inject_novelty
 import os
 import time
@@ -51,12 +56,14 @@ def make_env_with_constraints(env_id, novelty_family = None, inject = False):
     return env2
     
 def run_tests(env_id, model, eval_eps, novelty_name, timestep, i, novelty_family, id):
-    if i >= int(args['num_models'])//2:
+    if i >= int(args['num_models'])//2: # check whether to load a novelty injected environment
         inject = True
     else:
         inject = False
-    env2 = make_env_with_constraints(env_id, novelty_family, inject)
-    ctr = 0
+    
+    env2 = make_env_with_constraints(env_id, novelty_family, inject)# get the environment
+    
+    ctr = 0 # for counting the success
     total_reward = 0
     total_steps = 0
     for episode in range(eval_eps):
@@ -71,7 +78,7 @@ def run_tests(env_id, model, eval_eps, novelty_name, timestep, i, novelty_family
             if args['render']:
                 env2.render()
             if done:
-                if env2.inventory_items_quantity[env2.goal_item_to_craft] >= 1:
+                if env2.inventory_items_quantity[env2.goal_item_to_craft] >= 1: # success measure(goal achieved)
                     ctr+=1
                 # print ("The agent crafted a bow = {}".format(done))
                 count = step
@@ -117,68 +124,6 @@ class RenderOnEachStep(BaseCallback):
         # time.sleep(0.5)
 
 
-class SaveModelandInjectNovelty(BaseCallback):
-    """
-    Callback for saving a model (the check is done every ``check_freq`` steps)
-    based on the training reward (in practice, we recommend using ``EvalCallback``).
-
-    """
-
-    def __init__(self, env, check_freq, save_freq, log_dir, model_name, step_num, novelty_name, novelty_difficulty, novelty_arg1, novelty_arg2):
-        super(SaveModelandInjectNovelty, self).__init__()
-        
-        self.step_num = step_num
-        self.env = env
-        self.check_freq = check_freq
-        self.save_freq = save_freq
-        self.log_dir = log_dir
-        self.save_path = os.path.join(log_dir, model_name)
-        self.best_mean_reward = -np.inf
-        
-        self.novelty_name = novelty_name
-        self.novelty_difficulty = novelty_difficulty
-        self.novelty_arg1 = novelty_arg1
-        self.novelty_arg2 = novelty_arg2
-
-    def _on_step(self):
-        if self.n_calls % self.check_freq == 0:
-            # Retrieve training reward
-            x, y = ts2xy(load_results(self.log_dir), 'timesteps')
-            if len(x) > 0:
-                # Mean training reward over the last 100 episodes
-                mean_reward = np.mean(y[-100:])
-
-                # New best model, you could save the agent here
-                if mean_reward > self.best_mean_reward:
-                    self.best_mean_reward = mean_reward
-                    print("Saving new best model to {}".format(self.save_path))
-                    self.model.save(self.save_path)
-        if self.n_calls == self.step_num:
-            self.env = inject_novelty(self.env, self.novelty_name, self.novelty_difficulty, self.novelty_arg1, self.novelty_arg2)
-            check_env(self.env, warn=True)
-            # if self.novelty_name == 'breakincrease':
-            #     print ("Break increase novelty injected::: self.env.itemtobreakmore = {}".format(self.env.itemtobreakmore))
-            # if self.novelty_name == 'remapaction':
-            #     print("Action remap novelty check:: self.env.limited_actions_id = {}".format(self.env.limited_actions_id))
-        # save best model every "save_freq" steps
-        if self.n_calls % self.save_freq == 0:
-            self.model.save(self.save_path + '_' + str(self.n_calls))
-            #             # Retrieve training reward
-            # x, y = ts2xy(load_results(self.log_dir), 'timesteps')
-            # if len(x) > 0:
-            #     # Mean training reward over the last 100 episodes
-            #     mean_reward = np.mean(y[-100:])
-
-            #     # New best model, you could save the agent here
-            #     if mean_reward > self.best_mean_reward:
-            #         self.best_mean_reward = mean_reward
-            #         print("Saving new best model to {}".format(self.save_path))
-        # Save the first model
-        if self.n_calls == 50:
-            self.model.save(self.save_path + '_' + str(self.n_calls))
-        # print ("self.env observation space = {} ".format(self.env.observation_space))
-
-
 if __name__ == "__main__":
 
     ap = argparse.ArgumentParser()
@@ -191,31 +136,21 @@ if __name__ == "__main__":
     ap.add_argument("-N1", "--novelty_arg1", default= '', help="Type of Novelty to inject. Current version supports firewall: 'hard'; remapaction: 'hard'; breakincrease: 'stick' ")
     ap.add_argument("-N2", "--novelty_arg2", default= '', help="Type of Novelty to inject. Current version supports firewall: 'hard'; remapaction: 'hard'; breakincrease: 'stick' ")
    
-    ap.add_argument("-I", "--inject", default=1200000, help="Number of trials (steps) to run before injecting novelty", type=int)
+    ap.add_argument("-I", "--inject", default=2000000, help="Number of trials (steps) to run before injecting novelty", type=int)
     ap.add_argument("-C", "--check_best", default=10000, help="Number of (steps) to run check and save best model", type=int)
     ap.add_argument("-M", "--num_models", default=20, help="Number of models to save for testing later", type=int)
     ap.add_argument("-T", "--num_tests", default=25, help="Number of tests to conduct", type=int)
     
     ap.add_argument("-print_output", default="", help="print stuff")
     args = vars(ap.parse_args())
-    
-    # generate unique ID for every run
-    id = uuid.uuid1() 
-    
+
+    id = uuid.uuid1() # generate unique ID for every run
     novelty_family = [args['novelty_name'], args['novelty_difficulty'], args['novelty_arg1'], args['novelty_arg2']]
-    # env_id = args['environment'] 
     timesteps = 2*args['inject']  # 200000
     model_name = args['environment'] + str(args['novelty_name']) + '_' + str(id.hex)
     exp_dir = 'results' + os.sep + args['environment'] + os.sep + str(args['novelty_name']) + '_'+ str(id.hex)
     os.makedirs(exp_dir, exist_ok=True)
     env = make_env_with_constraints(args['environment'])
-    # env = gym.make(env_id) # make the environment
-    # env.unbreakable_items.add('crafting_table') # Make crafting table unbreakable for easy solving of task.
-    # env = LimitActions(env, {'Forward', 'Left', 'Right', 'Break', 'Craft_bow'}) # limit actions for easy training
-    # env = LidarInFront(env) # generate the observation space using LIDAR sensors
-    # print(env.unbreakable_items)
-    # env.reward_done = 1000
-    # env.reward_intermediate = 50
     env = Monitor(env, exp_dir) # for monitoring and saving the results
     # callback = RenderOnEachStep(env)
     # callback for the saving best model and injectiing novelty
@@ -228,39 +163,14 @@ if __name__ == "__main__":
     # tensorboard_name = "./ppo2_"+str(model_name)+'_tensorboard'+os.sep
     # model = PPO2(MlpPolicy, env, n_steps=256, verbose=1, tensorboard_log=tensorboard_name)
     model = PPO2(MlpPolicy, env, n_steps=256, verbose=1)
-
-    # model = A2C(MlpPolicy, env, n_steps=150, verbose=1, tensorboard_log="./a2c_bow_v_0_tensorboard/")
-
-    # env = DummyVecEnv([lambda: env])
-    # model = PPO2.load('NovelGridworld-Bow-v0_200000_8beams0filled11hypotenuserange3items_in_360degrees_best_model', env)
-
-    # Pretrain the model from human recored dataset
-    # specify `traj_limitation=-1` for using the whole dataset
-    # if pretrain:
-    #     dataset = ExpertDataset(expert_path='expert_NovelGridworld-Bow-v0_10demos.npz', traj_limitation=-1, batch_size=128)
-    #     model.pretrain(dataset, n_epochs=2000)
-    #     model.save(log_dir + os.sep + model_code)
-
-    # model.learn(total_timesteps=timesteps)
-    # model.learn(total_timesteps=timesteps, callback=callback)
-    # model.load("base_model_9")
-    # run_tests(env.env_id, model, 20, 'default',14)
-    # import sys
-    # sys.exit(1)
-
     
     for i in range (args['num_models']):
         if i == int(args['num_models'])//2:
             print ("Injecting Novelty now...")
             env = make_env_with_constraints(args['environment'], novelty_family, True)
         env.needs_reset = False # HACK: otherwise throws runtime error that environment needs reset (Monitor wrapper error!)
-        model.learn(total_timesteps=200000)
+        model.learn(total_timesteps=timesteps)
         # model.learn(total_timesteps=20)
         file_name = model_name + "_" + str(i)
         # model.save(file_name)
-        run_tests(args['environment'], model, args['num_tests'], novelty_family[0], 200000*(i+1), i, novelty_family, id)
-        # run_tests(args['environment'], model, args['num_tests'], novelty_family[0], 200*(i+1))
-
-    # model.learn(total_timesteps=1000000)
-
-    # model.save(os.path.join(exp_dir, 'last_model'))
+        run_tests(args['environment'], model, args['num_tests'], novelty_family[0], timesteps*(i+1), i, novelty_family, id)
