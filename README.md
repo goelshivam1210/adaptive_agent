@@ -5,6 +5,7 @@ This repository implements [stable_baselines](https://github.com/hill-a/stable-b
 
 ### Conda environment
 ```conda create --name <env> --file requirements.txt```
+
 ```conda activate <env> ```
 
 ## RL-agent
